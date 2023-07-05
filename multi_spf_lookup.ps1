@@ -1,3 +1,26 @@
+<#
+.SYNOPSIS
+This script performs DNS lookups to find the SPF records for a list of domains.
+.DESCRIPTION
+The script reads a list of domains from a CSV file, looks up the SPF records for each domain, 
+and writes the results to an output CSV file. 
+The output file will contain one row for each domain. Each row will contain the domain name, 
+a status message, and one or more SPF records.
+.PARAMETER inputFile
+Path to the CSV file containing the list of domains. The file should contain one domain per line.
+.PARAMETER outputFile
+Path to the CSV file where the results will be saved.
+.EXAMPLE
+.\SpfLookup.ps1 -inputFile "C:\path\to\your\input.csv" -outputFile "C:\path\to\your\output.csv"
+.NOTES
+- The script only looks up SPF records, which are stored in TXT records in DNS.
+- The script does not handle wildcard domains.
+- The script does not verify the validity of the SPF records.
+- In case of failure, a status message will be written in the 'status' column of the output file.
+.LINK
+https://github.com/ram-fabian-heinrich/multi-spf-lookup/
+#>
+
 param (
     [Parameter(Mandatory=$true)]
     [string]$inputFile,
