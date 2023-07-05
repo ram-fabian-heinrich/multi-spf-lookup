@@ -33,14 +33,18 @@ param (
 $maxSpfRecords = 1
 
 # Process each domain
-$domainData = Import-Csv $inputFile -Header 'DomainName' | ForEach-Object {
+$domains = Import-Csv $inputFile -Header 'DomainName'
+$totalDomains = $domains.Count
+$currentDomain = 0
+$failedDomains = 0
+
+$domainData = $domains | ForEach-Object {
     
     $domain = $_.PSObject.Properties.Value
 
-    # Skip object if it is part of header
-    if ($_ -eq 'DomainName' -or $_ -eq '------') {
-        pass
-    }
+    # Update progress
+    $currentDomain++
+    Write-Progress -Activity "Checking SPF records" -Status "$currentDomain of $totalDomains domains checked" -PercentComplete (($currentDomain / $totalDomains) * 100)
 
     $row = [ordered]@{}
 
@@ -73,6 +77,7 @@ $domainData = Import-Csv $inputFile -Header 'DomainName' | ForEach-Object {
         $row['domain'] = $domain
         $row['spf-record-1'] = ''
         $row['status'] = 'Failed to lookup spf record: ' + $_
+        $failedDomains++; 
     }
 
     # Return the row
@@ -89,4 +94,5 @@ for ($i = 1; $i -le $maxSpfRecords; $i++) {
 $header | Out-File $outputFile -Encoding utf8
 $domainData | Export-Csv $outputFile -Delimiter ';' -NoTypeInformation -Append -Encoding UTF8
 
-Write-Output @('Saved spf records report to: ' + $outputFile)
+# Inform user about number of domains checked and where outputFile is saved
+Write-Output @("Number of domains checked: " + $totalDomains + "`nNumber of failed lookups: " + $failedDomains + "`nSaved spf records report to: " + $outputFile)
